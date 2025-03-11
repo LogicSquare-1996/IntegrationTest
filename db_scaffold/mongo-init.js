@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 async function connectDB() {
-  const dbURI = "mongodb://root:root@localhost:27017/starter_project?authSource=admin"; // Replace with your connection string
+  const dbURI = "mongodb://localhost:27017/starter_project"; // Replace with your connection string
   try {
     await mongoose.connect(dbURI);
     console.log("MongoDB connected");

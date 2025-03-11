@@ -5,6 +5,7 @@ const login = require("./login")
 const logout = require("./logout")
 const refreshToken = require("./refreshToken")
 const { issueForgetPassword, resetForgotPassword, changePassword } = require("./password")
+const {createTodo} = require("./todo")
 // const schema = require("../../../../lib/auth/schema")
 const schema = require("./schema")
 const { validator, ValidationSource } = require("../../../../lib/helper/validation")
@@ -152,6 +153,14 @@ router.use(authenticated)
 
 router.post("/logout/:fromAllDevices?", logout) // Logout requested device or logout from all devices
 router.post("/changePassword", changePassword) // Authenticated user to change password
+
+//-------------------------------------------------------------------------
+//                                                  Integration Testing
+
+router.post("/todo", createTodo)
+
+
+//-------------------------------------------------------------------------
 
 // const auth = router
 module.exports = router

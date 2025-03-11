@@ -34,13 +34,13 @@ const signup = asyncHandler(async (req, res) => {
     keystore.secondaryKey
   )
   // send email
-  signupMail(createdUser.email, {
-    _id: createdUser._id,
-    email: createdUser.email,
-    name: createdUser.name,
-    password,
-    loginPath: frontEndLogin
-  })
+  // signupMail(createdUser.email, {
+  //   _id: createdUser._id,
+  //   email: createdUser.email,
+  //   name: createdUser.name,
+  //   password,
+  //   loginPath: frontEndLogin
+  // })
   return SuccessResponse(res, "Signup Successful", {
     user: _.pick(createdUser, ["_id", "name", "email", "roles", "profilePicUrl"]),
     tokens
