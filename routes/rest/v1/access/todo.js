@@ -13,5 +13,9 @@ module.exports = {
         
         const todo = await TodoRepo.createTodo(title, description, priority, status, dueDate, user._id)
         return SuccessResponse(res, "Todo created successfully", todo)
+    },
+
+    getTodos: async(req, res)=>{
+
     }
 }

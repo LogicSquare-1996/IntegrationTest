@@ -63,11 +63,11 @@ beforeAll(async () => {
     await connectDB();
 });
 
-// afterEach(async () => {
-//     await User.deleteMany({}); // Clear user collection after each test
-// });
+afterEach(async () => {
+    await User.deleteMany({}); // Clear user collection after each test
+});
 
-// // ✅ Drop the test database after all tests
+// ✅ Drop the test database after all tests
 afterAll(async () => {
     console.log("Dropping test database...");
     await mongoose.connection.db.dropDatabase(); // Drop the test database
@@ -75,132 +75,92 @@ afterAll(async () => {
     console.log("Test database deleted successfully.");
 });
 
-describe("Login Route - Positive & Negative Tests", () => {
-    it("should register a new user", async () => {
-        const user = await User.create({
-            email: "mbera829@gmail.com",
+describe("Signup Route - Positive & Negative Tests", () => {
+    
+    // ✅ Positive Test: Successful Signup
+    it("should signup a user successfully", async () => {
+        const response = await request(app)
+            .post("/v1/auth/signup")
+            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
+            .send({
+                email: "mbera829@gmail.com",
                 phone: "8172059732",
                 name: {
                     first: "Mrinal",
                     last: "Bera"
                 },
                 password: "qwerty123"
-        });
-        userId = user._id;
-    });
-    
-    it("should login a user successfully and return auth token", async () =>{
-        const response = await request(app)
-            .post("/v1/auth/login")
-            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
-            .send({
-                email: "mbera829@gmail.com",
-                password: "qwerty123"
             });
-        
+
         expect(response.statusCode).toBe(200);
-        // expect(response.body).toHaveProperty("authToken");
-        // authToken = response.body.data.tokens.accessToken;
-        // console.log(authToken);
-    });
-    
-
-    it("should not login with incorrect email", async () => {
-        const response = await request(app)
-            .post("/v1/auth/login")
-            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
-            .send({
-                email: "wrongemail@gmail.com",
-                password: "qwerty123"
-            });
-
-        expect(response.statusCode).toBe(400); // Assuming 401 Unauthorized
-        // expect(response.body).toHaveProperty("message", "Invalid credentials");
     });
 
-    it("should not login with incorrect password", async () => {
+    // ❌ Negative Test: Email Already Registered
+    it("should return error if email is already registered", async () => {
+        await User.create({
+            email: "mbera829@gmail.com",
+            phone: "8172059732",
+            name: {
+                first: "Mrinal",
+                last: "Bera"
+            },
+            password: "qwerty123"
+        });
+
         const response = await request(app)
-            .post("/v1/auth/login")
+            .post("/v1/auth/signup")
             .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
             .send({
                 email: "mbera829@gmail.com",
-                password: "wrongpassword"
-            });
-
-        expect(response.statusCode).toBe(400);
-    });
-
-    it("should not login without providing email", async () => {
-        const response = await request(app)
-            .post("/v1/auth/login")
-            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
-            .send({
-                password: "qwerty123"
-            });
-
-        expect(response.statusCode).toBe(400); 
-    });
-
-    it("should not login without providing password", async () => {
-        const response = await request(app)
-            .post("/v1/auth/login")
-            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
-            .send({
-                email: "mbera829@gmail.com"
-            });
-
-        expect(response.statusCode).toBe(400);
-    });
-
-    it("should not login with an unregistered email", async () => {
-        const response = await request(app)
-            .post("/v1/auth/login")
-            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
-            .send({
-                email: "unregistered@gmail.com",
+                phone: "8172059732",
+                name: "Existing User",
                 password: "qwerty123"
             });
 
         expect(response.statusCode).toBe(400);
-       
     });
 
-    it("should not login with an invalid email format", async () => {
+    // ❌ Negative Test: Missing Email
+    it("should return error when email is missing", async () => {
         const response = await request(app)
-            .post("/v1/auth/login")
+            .post("/v1/auth/signup")
+            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
+            .send({
+                phone: "8172059732",
+                name: "Existing User",
+                password: "qwerty123"
+            });
+
+        expect(response.statusCode).toBe(400);
+    });
+
+    // ❌ Negative Test: Missing Password
+    it("should return error when password is missing", async () => {
+        const response = await request(app)
+            .post("/v1/auth/signup")
+            .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
+            .send({
+                email: "newuser@example.com",
+                phone: "8172059732",
+                name: "New User"
+            });
+
+        expect(response.statusCode).toBe(400);
+    });
+
+    // ❌ Negative Test: Invalid Email Format
+    it("should return error for invalid email format", async () => {
+        const response = await request(app)
+            .post("/v1/auth/signup")
             .set("x-api-key", "GCMUDiuY5a7WvyUNt9n3QztToSHzK7Uj")
             .send({
                 email: "invalid-email",
+                phone: "8172059732",
+                name: "Invalid Email User",
                 password: "qwerty123"
             });
 
         expect(response.statusCode).toBe(400);
-        
     });
 
-    it("should not login without API key", async () => {
-        const response = await request(app)
-            .post("/v1/auth/login")
-            .send({
-                email: "mbera829@gmail.com",
-                password: "qwerty123"
-            });
-
-        expect(response.statusCode).toBe(400); // Assuming 403 Forbidden for missing API key
-        
-    });
-
-    it("should not login with incorrect API key", async () => {
-        const response = await request(app)
-            .post("/v1/auth/login")
-            .set("x-api-key", "invalid-api-key")
-            .send({
-                email: "mbera829@gmail.com",
-                password: "qwerty123"
-            });
-
-        expect(response.statusCode).toBe(403);
-       
-    });
-    
-})
+});
