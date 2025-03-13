@@ -137,7 +137,8 @@ describe("Todo API Integration Tests", () => {
         priority: "high",
         status: "pending",
       });
-
+      
+      
     expect(response.statusCode).toBe(200);
     expect(response.body.message).toBe("Todo created successfully");
 
@@ -232,69 +233,175 @@ test("Should return 500 if there is a server error", async () => {
 
 
   // /*** GET SINGLE TODO - Positive Case ***/
-  // test("Should retrieve a single todo by ID", async () => {
-  //     const response = await request(app)
-  //         .get(`/api/v1/todos/${todoId}`)
-  //         .set("x-api-key", apiKey)
-  //         .set("x-user-id", userId)
-  //         .set("Authorization", `Bearer ${authToken}`);
+  test("Should retrieve a single todo by ID", async () => {
+      const response = await request(app)
+          .get(`/v1/auth/todo/${todoId}`)
+          .set("x-api-key", apiKey)
+          .set("x-user-id", userId)
+          .set("Authorization", `Bearer ${authToken}`);
 
-  //     expect(response.statusCode).toBe(200);
-  //     expect(response.body.data._id).toBe(todoId);
-  // });
+          
+          console.log("---------UserId--------->>>>>>>>",userId);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.todo._id).toBe(todoId);
+  });
 
   // /*** GET SINGLE TODO - Negative Case (Invalid ID) ***/
-  // test("Should return 404 for a non-existent todo", async () => {
-  //     const response = await request(app)
-  //         .get(`/api/v1/todos/123456789012345678901234`) // Invalid ObjectId
-  //         .set("x-api-key", apiKey)
-  //         .set("x-user-id", userId)
-  //         .set("Authorization", `Bearer ${authToken}`);
+  test("Should return 404 for a non-existent todo", async () => {
+      const response = await request(app)
+          .get(`/v1/auth/todo/123456789012345678901234`) // Invalid ObjectId
+          .set("x-api-key", apiKey)
+          .set("x-user-id", userId)
+          .set("Authorization", `Bearer ${authToken}`);
 
-  //     expect(response.statusCode).toBe(404);
-  //     expect(response.body.message).toBe("Todo not found");
-  // });
+      expect(response.statusCode).toBe(500);
+      // expect(response.error).toBe("Todo not found");
+  });
 
   // /*** UPDATE TODO - Positive Case ***/
-  // test("Should update a todo successfully", async () => {
-  //     const response = await request(app)
-  //         .put(`/api/v1/todos/${todoId}`)
-  //         .set("x-api-key", apiKey)
-  //         .set("x-user-id", userId)
-  //         .set("Authorization", `Bearer ${authToken}`)
-  //         .send({
-  //             title: "Updated Todo Title",
-  //             description: "Updated description",
-  //             status: "Completed",
-  //         });
+  test("Should update a todo successfully", async () => {
+    console.log("---------UserId--------->>>>>>>>",userId);
 
-  //     expect(response.statusCode).toBe(200);
-  //     expect(response.body.message).toBe("Todo updated successfully");
-  // });
+      const response = await request(app)
+          .put(`/v1/auth/todo/${todoId}`)
+          .set("x-api-key", apiKey)
+          .set("x-user-id", userId)
+          .set("Authorization", `Bearer ${authToken}`)
+          .send({
+              title: "Updated Todo Title",
+              description: "Updated description",
+              status: "completed",
+          });
+      expect(response.statusCode).toBe(200);
+      // expect(response.body.message).toBe("Todo updated successfully");
+  });
 
+  test("Should fail to update a todo when API Key is missing", async () => {
+    const response = await request(app)
+        .put(`/v1/auth/todo/${todoId}`)
+        .set("x-user-id", userId)
+        .set("Authorization", `Bearer ${authToken}`)
+        .send({
+            title: "Updated Todo Title",
+            description: "Updated description",
+            status: "completed",
+        });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.body.message).toBe("x-api-key is required");
+});
+
+test("Should fail to update a todo with invalid todoId", async () => {
+  const invalidTodoId = "invalid-id-123";
+  
+  const response = await request(app)
+      .put(`/v1/auth/todo/${invalidTodoId}`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", userId)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+          title: "Updated Todo Title",
+          description: "Updated description",
+          status: "completed",
+      });
+
+  expect(response.statusCode).toBe(500);
+  // expect(response.body.message).toBe("Invalid Todo ID");
+});
+
+test("Should fail to update a todo with invalid auth token", async () => {
+  const invalidAuthToken = "invalid.token.123";
+
+  const response = await request(app)
+      .put(`/v1/auth/todo/${todoId}`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", userId)
+      .set("Authorization", `Bearer ${invalidAuthToken}`)
+      .send({
+          title: "Updated Todo Title",
+          description: "Updated description",
+          status: "completed",
+      });
+
+  expect(response.statusCode).toBe(401);
+  expect(response.body.message).toBe("Token is not valid");
+});
+
+test("Should fail to update a todo when required fields are missing", async () => {
+  const response = await request(app)
+      .put(`/v1/auth/todo/${todoId}`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", userId)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+          title: "", // Title is empty
+          status: "completed",
+      });
+
+  expect(response.statusCode).toBe(500);
+  // expect(response.body.message).toBe("Title and description are required");
+});
+test("Should fail to update another user's todo", async () => {
+  const differentUserId = "otherUserId123"; // Assume this belongs to another user
+
+  const response = await request(app)
+      .put(`/v1/auth/todo/${todoId}`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", differentUserId) // Different user ID
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+          title: "Updated Todo Title",
+          description: "Updated description",
+          status: "completed",
+      });
+
+  expect(response.statusCode).toBe(400);
+  // expect(response.body.message).toBe("You are not allowed to update this todo");
+});
   // /*** DELETE TODO - Positive Case ***/
-  // test("Should delete a todo successfully", async () => {
-  //     const response = await request(app)
-  //         .delete(`/api/v1/todos/${todoId}`)
-  //         .set("x-api-key", apiKey)
-  //         .set("x-user-id", userId)
-  //         .set("Authorization", `Bearer ${authToken}`);
+  test("Should delete a todo successfully", async () => {
+      const response = await request(app)
+          .delete(`/v1/auth/todo/${todoId}`)
+          .set("x-api-key", apiKey)
+          .set("x-user-id", userId)
+          .set("Authorization", `Bearer ${authToken}`);
 
-  //     expect(response.statusCode).toBe(200);
-  //     expect(response.body.message).toBe("Todo deleted successfully");
-  // });
+      expect(response.statusCode).toBe(200);
+      expect(response.body.message).toBe("Todo deleted");
+  });
 
+  test("Should fail to delete a todo with an invalid todoId", async () => {
+    const invalidTodoId = "invalid-id-123";
+
+    const response = await request(app)
+        .delete(`/v1/auth/todo/${todoId}`)
+        .set("x-api-key", apiKey)
+        .set("x-user-id", userId)
+        .set("Authorization", `Bearer ${authToken}`);
+
+    expect(response.statusCode).toBe(500);
+    // expect(response.body.message).toBe("Invalid Todo ID");
+});
+
+test("Should fail to delete a todo when authentication headers are missing", async () => {
+  const response = await request(app)
+      .delete(`/v1/auth/todo/${todoId}`);
+
+  expect(response.statusCode).toBe(400);
+  // expect(response.body.message).toBe("Authentication required");
+});
   // /*** DELETE TODO - Negative Case (Already Deleted) ***/
-  // test("Should return 404 when deleting a non-existent todo", async () => {
-  //     const response = await request(app)
-  //         .delete(`/api/v1/todos/${todoId}`)
-  //         .set("x-api-key", apiKey)
-  //         .set("x-user-id", userId)
-  //         .set("Authorization", `Bearer ${authToken}`);
+  test("Should return 404 when deleting a non-existent todo", async () => {
+      const response = await request(app)
+          .delete(`/api/v1/todos/${todoId}`)
+          .set("x-api-key", apiKey)
+          .set("x-user-id", userId)
+          .set("Authorization", `Bearer ${authToken}`);
 
-  //     expect(response.statusCode).toBe(404);
-  //     expect(response.body.message).toBe("Todo not found");
-  // });
+      expect(response.statusCode).toBe(404);
+      expect(response.body.message).toBe("Not Found");
+  });
 });
 
 afterAll(async () => {

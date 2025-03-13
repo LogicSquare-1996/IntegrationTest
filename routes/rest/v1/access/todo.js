@@ -58,5 +58,46 @@ module.exports = {
         } catch (error) {
             return res.status(500).json({message: "An error occurred", error: error.message})
         }
+    },
+
+    updateTodo: async(req, res)=>{
+        try {
+            const user = await UserRepo.findById(req.user._id)
+            if(!user) return res.status(400).json({message: "User not found"})
+            const todo = await TodoRepo.updateTodo(req.params.id, req.body, user._id)
+            if(!todo) return res.status(400).json({message: "Todo not found"})
+            return res.status(200).json({message: "Todo updated", todo})
+        } catch (error) {
+            return res.status(500).json({message: "An error occurred", error: error.message})
+        }
+    },
+
+    deleteTodo: async(req, res)=>{
+        try {
+            const user = await UserRepo.findById(req.user._id)
+            if(!user) return res.status(400).json({message: "User not found"})
+            const todo = await TodoRepo.deleteTodo(req.params.id, user._id)
+            if(!todo) return res.status(400).json({message: "Todo not found"})
+            return res.status(200).json({message: "Todo deleted", todo})
+        } catch (error) {
+            return res.status(500).json({message: "An error occurred", error: error.message})
+        }
+    },
+
+    updateTodoStatus: async(req, res)=>{
+        try {
+
+            console.log("Hi Mrinal");
+            
+            const user = await UserRepo.findById(req.user._id)
+            if(!user) return res.status(400).json({message: "User not found"})
+            const todo = await TodoRepo.updateTodoStatus(req.params.id, req.body, user._id)
+            if(!todo) return res.status(400).json({message: "Todo not found"})
+
+            return res.status(200).json({message: "Todo status updated", todo})
+        } catch (error) {
+            return res.status(500).json({message: "An error occurred", error: error.message})
+        }
     }
 }
+

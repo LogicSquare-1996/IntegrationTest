@@ -5,7 +5,7 @@ const login = require("./login")
 const logout = require("./logout")
 const refreshToken = require("./refreshToken")
 const { issueForgetPassword, resetForgotPassword, changePassword } = require("./password")
-const {createTodo,getTodos,getTodo} = require("./todo")
+const {createTodo,getTodos,getTodo,updateTodo,deleteTodo,updateTodoStatus} = require("./todo")
 // const schema = require("../../../../lib/auth/schema")
 const schema = require("./schema")
 const { validator, ValidationSource } = require("../../../../lib/helper/validation")
@@ -160,6 +160,9 @@ router.post("/changePassword", changePassword) // Authenticated user to change p
 router.post("/todo", createTodo)
 router.get("/todos", getTodos)
 router.get("/todo/:id", getTodo)
+router.put("/todo/:id", updateTodo)
+router.delete("/todo/:id", deleteTodo)
+router.post("todo/status/:id", updateTodoStatus)
 
 //-------------------------------------------------------------------------
 
