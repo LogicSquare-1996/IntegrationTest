@@ -162,7 +162,7 @@ router.get("/todos", getTodos)
 router.get("/todo/:id", getTodo)
 router.put("/todo/:id", updateTodo)
 router.delete("/todo/:id", deleteTodo)
-router.post("todo/status/:id", updateTodoStatus)
+router.post("/todo/status/:id", updateTodoStatus)
 
 //-------------------------------------------------------------------------
 

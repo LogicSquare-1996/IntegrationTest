@@ -81,11 +81,12 @@ deleteTodo: async (todoId, userId) => {
 
 updateTodoStatus: async (todoId, todoData, userId) => {
     try {
+        if(!todoData.status) throw new Error("Status is required")
         const todo = await Todo.findOne({ _id: todoId, user: userId, isDeleted: false });
-        
+        if(todoData.status=== todo.status) throw new Error("Status can't be same")
         
         if (!todo) throw new Error("Todo not found");
-        todo.status = todoData.status || todo.status;
+        todo.status = todoData.status ||todo.status;
         await todo.save();
         return todo;
     } catch (error) {

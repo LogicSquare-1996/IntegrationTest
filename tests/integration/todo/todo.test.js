@@ -359,6 +359,59 @@ test("Should fail to update another user's todo", async () => {
   expect(response.statusCode).toBe(400);
   // expect(response.body.message).toBe("You are not allowed to update this todo");
 });
+
+
+// /*** Update Status - Positive Case ***/
+test("Should update the status of a todo", async () => {
+  const response = await request(app)
+      .post(`/v1/auth/todo/status/${todoId}`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", userId)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+          status: "in-progress",
+      });
+
+  expect(response.statusCode).toBe(200);
+});
+
+// /*** Update Status - Negative Case ***/
+
+test("Should return 500 if status is missing", async () => {
+  const response = await request(app)
+      .post(`/v1/auth/todo/status/${todoId}`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", userId)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({});
+
+  expect(response.statusCode).toBe(500);
+});
+test("Should return 500 if status is invalid", async () => {
+  const response = await request(app)
+      .post(`/v1/auth/todo/status/${todoId}`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", userId)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+          status: "invalid_status", // Assuming only "completed" or "pending" are allowed
+      });
+
+  expect(response.statusCode).toBe(500);
+});
+test("Should return 500 if todoId does not exist", async () => {
+  const response = await request(app)
+      .post(`/v1/auth/todo/status/nonexistentTodoId`)
+      .set("x-api-key", apiKey)
+      .set("x-user-id", userId)
+      .set("Authorization", `Bearer ${authToken}`)
+      .send({
+          status: "completed",
+      });
+
+  expect(response.statusCode).toBe(500);
+});
+
   // /*** DELETE TODO - Positive Case ***/
   test("Should delete a todo successfully", async () => {
       const response = await request(app)
@@ -402,6 +455,8 @@ test("Should fail to delete a todo when authentication headers are missing", asy
       expect(response.statusCode).toBe(404);
       expect(response.body.message).toBe("Not Found");
   });
+
+  
 });
 
 afterAll(async () => {

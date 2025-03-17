@@ -86,8 +86,7 @@ module.exports = {
 
     updateTodoStatus: async(req, res)=>{
         try {
-
-            console.log("Hi Mrinal");
+            // if(!req.body.status) return res.status(400).json({message: "Status is required"})
             
             const user = await UserRepo.findById(req.user._id)
             if(!user) return res.status(400).json({message: "User not found"})
